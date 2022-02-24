@@ -20,8 +20,12 @@
 //////////////////////////////////////////////////////////////////////////////////
 module game(
 	input clk_in,
-	input START,
+	//input START,
 	input RESET,
+	input button_up,
+	input button_down,
+	input button_left,
+	input button_right,
 	output [3:0] anode,
 	output [6:0] segs
     );
@@ -33,7 +37,7 @@ module game(
 	 
 	 //debounced buttons
 	 wire rst;
-	 wire game_begin;
+	 //wire game_begin;
 	 
 	 // Display segments
     wire [6:0] segs0;
@@ -57,7 +61,43 @@ module game(
 		  .clk_fast(clk_fast)
     );
 	 
-	 debounce start(
+	 //top button
+	 debounce bup(
+        .clk_in(clk_in),
+        .clk_fast(clk_fast),
+        .rst(rst),
+        .button_in(button_up),
+        .button_out(b_up)
+    );
+	 
+	 //bottom button
+	 debounce bud(
+        .clk_in(clk_in),
+        .clk_fast(clk_fast),
+        .rst(rst),
+        .button_in(button_down),
+        .button_out(b_down)
+    );
+	 
+	 //left button
+	 debounce bul(
+        .clk_in(clk_in),
+        .clk_fast(clk_fast),
+        .rst(rst),
+        .button_in(button_left),
+        .button_out(b_left)
+    );
+	 
+	 //right button
+	 debounce bur(
+        .clk_in(clk_in),
+        .clk_fast(clk_fast),
+        .rst(rst),
+        .button_in(button_right),
+        .button_out(b_right)
+    );
+	 
+	 /*debounce start(
         .clk_in(clk_in),
         .clk_fast(clk_fast),
         .rst(rst),
@@ -77,7 +117,7 @@ module game(
         else begin
             start_reg <= start_reg;
         end
-    end
+    end*/
 	
 	// Handle which digit displays what
     digit_to_seven_seg dts(
@@ -108,7 +148,7 @@ module clk_gen(
 	always @(posedge clk_in) begin
         if (rst) begin
             count_1Hz <= 0;
-            clk <= 0;
+            clk_1Hz <= 0;
         end
        
         // 50,000,000 states with 50% duty = divide by 100,000,000 clock
@@ -229,14 +269,14 @@ module digit_to_seven_seg(
 
 	reg [1:0] count = 0;
 	always @(posedge clk_in, posedge rst) begin 
-	 
-		count <= count + 1'd1;
+		//count <= count + 1'd1;
 		 
 		if (rst) begin
 			segs0 <= 7'b1111111;
 			segs1 <= 7'b1111111;
 			segs2 <= 7'b1111111;
 			segs3 <= 7'b1111111;
+			count <= count + 1'd1;
 		end
 		else if (count == 1'd0) begin
 			 anode <= 4'b1110;
@@ -245,6 +285,7 @@ module digit_to_seven_seg(
 			segs2 <= 7'b1111111;
 			segs3 <= 7'b1111111;
 			 segs <= segs0;
+			 count <= count + 1'd1;
 		end
 		else if (count == 1'd1) begin
 			 anode <= 4'b1101;
@@ -253,6 +294,7 @@ module digit_to_seven_seg(
 			segs2 <= 7'b1111111;
 			segs3 <= 7'b1111111;
 			 segs <= segs1;
+			 count <= count + 1'd1;
 		end
 		else if (count == 2'd2) begin
 			 anode <= 4'b1011;
@@ -261,6 +303,7 @@ module digit_to_seven_seg(
 			segs2 <= 7'b1100011;
 			segs3 <= 7'b1111111;
 			 segs <= segs2;
+			 count <= count + 1'd1;
 		end
 		else begin
 			 anode <= 4'b0111;
@@ -269,6 +312,7 @@ module digit_to_seven_seg(
 			segs2 <= 7'b1111111;
 			segs3 <= 7'b0110001;
 			 segs <= segs3;
+			 count <= count + 1'd1;
 		end
 	end
 endmodule
